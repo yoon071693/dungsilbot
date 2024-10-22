@@ -1,9 +1,9 @@
+import os 
 import logging
 import discord
 from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
-import os 
 
 # 로그 설정
 logging.basicConfig(filename='bot.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
@@ -272,76 +272,17 @@ async def 채널설정(ctx, channel: discord.TextChannel):
     await asyncio.sleep(5)
     await msg.delete()
 
-@bot.event
-async def on_ready():
-    logging.info(f'봇이 로그인되었습니다: {bot.user.name}')
-    
-    if allowed_channel_id:
-        channel = bot.get_channel(allowed_channel_id)
-        if channel:
-            # 기존의 로그아웃 메시지를 삭제
-            async for message in channel.history(limit=100):
-                if message.author == bot.user and message.embeds and '🌙둥실이 자는중🌙' in message.embeds[0].title:
-                    await message.delete()
-
-            msg = await channel.send(embed=discord.Embed(
-                title='🎵둥실이 가동중🎵',
-                description='둥실이 준비 완료!',
-                color=0xF6CEF5
-            ))
-            logging.info('둥실이 준비 완료 메시지 전송됨')
-    
-    # 스케줄러 작업 성공 메시지 출력
-    print('스케줄러 작업이 성공적으로 시작되었습니다.')
-
-async def send_logout_message():
-    if allowed_channel_id:
-        channel = bot.get_channel(allowed_channel_id)
-        if channel:
-            # 기존의 로그인 메시지를 삭제
-            async for message in channel.history(limit=100):
-                if message.author == bot.user and message.embeds and '🎵둥실이 가동중🎵' in message.embeds[0].title:
-                    await message.delete()
-
-            msg = await channel.send(embed=discord.Embed(
-                title='🌙둥실이 자는중🌙',
-                description='사용을 원하시면, **@콩윤** 으로 소환 부탁드립니다!',
-                color=0xF6CEF5
-            ))
-            logging.info('둥실이 자는중 메시지 전송됨')
-
-async def close():
-    await send_logout_message()
-    await bot.close()
-
-bot.close = close
-
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
-
-    if allowed_channel_id and message.channel.id != allowed_channel_id:
-        return
-
-    if message.content.startswith('!!'):
-        await asyncio.sleep(5)
-        await message.delete()
-    else:
-        await asyncio.sleep(5)
+async def periodic_message(channel):
+    while True:
+        # 메시지를 보냅니다.
+        message = await channel.send("🎵둥실이 열일중🎵")
+        
+        # 3분 후에 메시지를 삭제합니다.
+        await asyncio.sleep(180)  # 3분(180초) 대기
         await message.delete()
 
-    await bot.process_commands(message)
+        # 4분 대기 후 다시 메시지를 보냅니다.
+        await asyncio.sleep(240)  # 4분(240초) 대기
 
-@bot.event
-async def on_voice_state_update(member, before, after):
-    if member.id == bot.user.id:
-        return
-
-    if before.channel and len(before.channel.members) == 1:
-        voice_client = bot.voice_clients[0] if bot.voice_clients else None
-        if voice_client and voice_client.channel == before.channel:
-            await voice_client.disconnect()
-            logging.info(f'봇이 음성 채널에서 연결을 끊었습니다: {before.channel.name}')
 
 bot.run(os.getenv('DISCORD_TOKEN'))
