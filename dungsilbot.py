@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
+import os 
 
 # 로그 설정
 logging.basicConfig(filename='bot.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
